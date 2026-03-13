@@ -11,14 +11,18 @@ step1
 
 
 step2
-打开本机电脑以下路径"C:\Users\（你的用户名）\.ssh\config"用记事本啥的打开都可以，然后在自己服务器字段下面加入RemoteForward 10090 127.0.0.1:10090，然后保存。
+打开本机电脑以下路径"C:\Users\（你的用户名）\.ssh\config"用记事本啥的打开都可以，然后在自己服务器字段下面加入
+RemoteForward 10090 127.0.0.1:10090，然后保存。
+
 图<img width="512" height="438" alt="673a515d49b8dd728e76b646419d4f15" src="https://github.com/user-attachments/assets/b5313d0e-3f49-43f7-97a1-19b54292b581" />
+
 
 
 
 step3
 连接服务器，打开Vscode，按ctrl+shift+p,在顶端输入Preferences: Open Remote Settings (JSON)，然后选图里的这个，一般都是第一个。
 <img width="646" height="227" alt="4daa99bfb8e2ebd90befe58f5b8399c6" src="https://github.com/user-attachments/assets/e63f458e-f5e4-44e9-b69e-823294aba7ea" />
+
 
 
 step4
@@ -30,9 +34,11 @@ step4
 
 
 
+
 step5
 保存完，重启Vscode,最后最好在终端输入netstat -tuln | grep 10090，测一下是否可以来联通，如图出现这个就OK了
 <img width="1041" height="141" alt="a79146ac1a922060a05382f5caf0f626" src="https://github.com/user-attachments/assets/ddf09d3a-8e52-429c-87ff-1c7f5da6bdf5" />
+
 
 
 
