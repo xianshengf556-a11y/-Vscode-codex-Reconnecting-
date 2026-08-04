@@ -1,54 +1,112 @@
-# -Vscode-codex-Reconnecting-
-解决 VS Code Codex 登录失败、一直 Reconnecting、卡在 Thinking 等常见问题。 
-提供完整 SSH 配置、代理转发、远程开发环境一键搭建方案， 适合在 AutoDL / 极算云 / 腾讯云等 GPU 服务器上使用 AI 编程插件。
-问题如图
-<img width="1232" height="715" alt="14431395d52ed118bf12b9a04616542d" src="https://github.com/user-attachments/assets/88a6fc09-db7a-4e21-a912-52e88f5aa1e5" />
-<img width="364" height="420" alt="555653b768e0ef63150a8d18362c8b28" src="https://github.com/user-attachments/assets/62e7bab7-eeb7-4156-8ee7-bc77adf474a3" />
+# VSCode-Codex-Connection-Issues
 
+> [English](README.md) | [中文](README.zh-CN.md)
 
-step1
-先看魔法梯子的VPN代理端口是多少，我们以10090为例，有的是7890。<img width="334" height="139" alt="image" src="https://github.com/user-attachments/assets/189f0858-bc75-4827-8ceb-eee34a9acd67" />
+> Fix VS Code Codex connection problems: login failures, endless "Reconnecting…", stuck at "Thinking", plus a complete SSH + proxy forwarding setup for remote GPU servers (AutoDL / Jijiyun / Tencent Cloud).
 
+![license](https://img.shields.io/badge/License-MIT-green) ![platform](https://img.shields.io/badge/Platform-Windows%2FmacOS%2FLinux-lightgrey)
 
-step2
-打开本机电脑以下路径"C:\Users\（你的用户名）\.ssh\config"用记事本啥的打开都可以，然后在自己服务器字段下面加入
-RemoteForward 10090 127.0.0.1:10090，然后保存。
+## Background
 
-图<img width="512" height="438" alt="673a515d49b8dd728e76b646419d4f15" src="https://github.com/user-attachments/assets/b5313d0e-3f49-43f7-97a1-19b54292b581" />
+When using the Codex extension in VS Code over SSH to a remote GPU server, the extension often cannot reach the Codex service: it keeps showing "Reconnecting…", the login page never finishes, or the chat stays at "Thinking" forever. Local connections usually work, which means the remote environment cannot reach your local proxy / VPN.
 
+This guide provides the complete fix: forward your local VPN proxy port into the remote server over SSH, configure the remote VS Code proxy settings, and verify connectivity.
 
+## Symptoms
 
+- Codex keeps showing "Reconnecting…";
+- Login fails or hangs;
+- Stuck at "Thinking" with no response;
+- Works locally, fails only inside VS Code Remote (SSH).
 
-step3
-连接服务器，打开Vscode，按ctrl+shift+p,在顶端输入Preferences: Open Remote Settings (JSON)，然后选图里的这个，一般都是第一个。
-<img width="646" height="227" alt="4daa99bfb8e2ebd90befe58f5b8399c6" src="https://github.com/user-attachments/assets/e63f458e-f5e4-44e9-b69e-823294aba7ea" />
+![reconnecting](docs/images/reconnecting-issue.png)
 
+![login](docs/images/login-issue.png)
 
+## Quick fix (5 steps)
 
-step4
-然后打开后添加这两行
-    "http.proxy": "http://127.0.0.1:10090",
-    "https.proxy": "http://127.0.0.1:10090",
-    注意是有逗号的。如图，记得保存
-<img width="622" height="159" alt="984d9bd970c04876cb4c8e85249e9788" src="https://github.com/user-attachments/assets/88e68458-f368-4b28-a0ed-e41729b67b79" />
+### Step 1: Find your VPN proxy port
 
+Check the local proxy port of your VPN ("magic ladder"). The examples below use `10090`; some clients use `7890`.
 
+![vpn proxy port](docs/images/vpn-proxy-port.png)
 
+### Step 2: Forward the port in your SSH config
 
-step5
-保存完，重启Vscode,最后最好在终端输入netstat -tuln | grep 10090，测一下是否可以来联通，如图出现这个就OK了
-<img width="1041" height="141" alt="a79146ac1a922060a05382f5caf0f626" src="https://github.com/user-attachments/assets/ddf09d3a-8e52-429c-87ff-1c7f5da6bdf5" />
+Open `C:\Users\<your-username>\.ssh\config` with any text editor, and add the following line inside the server block:
 
+```
+RemoteForward 10090 127.0.0.1:10090
+```
 
+Then save the file.
 
+![ssh config](docs/images/ssh-config.png)
 
-注意！
-不管是10090还是7890都以梯子的端口号为准，指令也是，因为一些梯子由于版本原因只能是7890不能是10090。
+### Step 3: Open Remote Settings (JSON)
 
-确保本地能登录codex排除梯子节点问题
+Connect to the server, open VS Code, press `Ctrl+Shift+P`, type `Preferences: Open Remote Settings (JSON)`, and choose the first matching item (usually the first result).
 
-如果以上操作不行，就重启Vscode或者梯子
+![open remote settings](docs/images/open-remote-settings.png)
 
+### Step 4: Add the proxy settings
 
+Add these two lines (note the commas) and save:
 
+```json
+"http.proxy": "http://127.0.0.1:10090",
+"https.proxy": "http://127.0.0.1:10090",
+```
 
+![remote settings](docs/images/remote-settings-json.png)
+
+### Step 5: Restart VS Code and verify
+
+Restart VS Code, then run the following in the server terminal:
+
+```bash
+netstat -tuln | grep 10090
+```
+
+If the port shows as listening, the forwarding is working.
+
+![test port](docs/images/test-port.png)
+
+## Important notes
+
+- Always use the port your VPN actually listens on (e.g., `10090` or `7890`) consistently in both the SSH config and the proxy settings — some VPN clients only support `7890`.
+- Make sure Codex can log in on your local machine first; this rules out VPN node issues.
+- If it still does not work, restart VS Code or the VPN client.
+
+## FAQ
+
+**Q1: Which port should I use?**
+Use the port your VPN client actually listens on. The guide uses `10090` as an example; many clients use `7890`.
+
+**Q2: Do I need to change anything on the server?**
+No. `RemoteForward` forwards your local port to the server automatically — no extra system configuration is needed on the server side.
+
+**Q3: It still says "Reconnecting…" after all steps?**
+Restart VS Code and the VPN. If the server is in a network with restricted access, try a different VPN node.
+
+## Project layout
+
+```
+VSCode-Codex-Connection-Issues/
+├── README.md                    # English documentation
+├── README.zh-CN.md              # Chinese documentation
+├── LICENSE / .gitignore
+└── docs/
+    └── images/                  # Tutorial screenshots
+        ├── login-issue.png
+        ├── reconnecting-issue.png
+        ├── vpn-proxy-port.png
+        ├── ssh-config.png
+        ├── open-remote-settings.png
+        ├── remote-settings-json.png
+        └── test-port.png
+```
+
+## License
+
+MIT
